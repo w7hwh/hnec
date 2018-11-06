@@ -1,0 +1,214 @@
+﻿X N E C V I E W
+---------------
+A program for visualizing NEC2 input and output data (Unix/X-windows).
+
+Copyright (C) 1998-2001, Pieter-Tjerk de Boer
+
+-----------------------------------------------------------------------
+
+HISTORY:
+--------
+
+Version 0.1, 1998-06-06:
+- first public release
+- only few input card types supported
+
+Version 0.2, 1998-12-13:
+- almost all input card types supported
+- added plotting of gain pattern
+- colour added
+- made front and back of surfaces distinguishable (by colour)
+
+Version 0.3, 1999-1-15
+- added PostScript output
+- added third gain scale, "log"
+- added buttons in the window
+- added plotting of gain as slices in coordinate planes
+- very small mouse dragging is treated as clicking
+- corrected handling of output files which sweep over only one angle
+- man page added, thanks to Joop Stakenborg, PA3ABA.
+
+Version 0.4, 1999-5-30
+- fixed bug in PostScript output
+- added handling of GS cards
+- "long" options now need -- instead of -
+- fixed colours on 1bpp screen
+
+Version 0.5, 1999-6-13
+- added double buffering support: this reduces flickering by drawing in
+  a separate 'Pixmap' instead of on the screen
+- postscript now uses a private dictionary
+- more general NEC output reading routine
+- uses hinted motion events to speed up dragging
+- motion+first button now rotates entire gain pattern, motion + second
+  button rotates simplified gain pattern (quicker)
+- fixed bug in linear gain scale
+- removed -q/--quick option
+- added a (too?) simple icon to appear when xnecview is iconified
+The first 5 of these changes were essentially contributed by
+Alan Bain, M1BXV; thanks!
+
+Version 0.6, 1999-7-4
+- added display of wire numbers
+- added display of location of excitations and loads
+- added display of 'X', 'Y' and 'Z' at axes
+- configuration is now separate .h file
+- corrected "ARRL style" gain scale (now 0.89 per 2 dB, as per the "ARRL
+  Antenna Book"; tnx Don, VE3HUR)
+- added handling of GM cards with non-zero ITS
+- xnecview no longer exits when supplied with incorrect input
+- an error message is printed when writing postscript fails (tnx Alan Bain)
+- standard X command line options like -geometry now work
+
+Version 1.0, 1999-7-25
+- GW cards lacking the wire radius are now accepted
+- GC cards now produce a warning
+- added a bit of text to the postscript output
+(tnx to Don VE3HUR for testing and remarks resulting in the above changes)
+- iconifying now uses own icon again (didn't in 0.6)
+
+Version 1.01, 2000-01-21
+- card types of structure input ("GW" etc.) now also accepted in lower case
+
+Version 1.02, 2000-03-25
+- print not only maximum gain, but also direction of maximum gain and
+  front-to-back-ratio.
+- plot radial lines every 10 degrees when looking along the X/Y/Z axis
+  (essentially contributed by Marco Menchise, IZ8AEB; tnx!)
+
+Version 1.10, 2000-04-25
+- added a window with plots of SWR, gain, etc. as a function of frequency
+  (inspired by a preliminary implementation by Marco Menchise, IZ8AEB; tnx!)
+- added support for radiation diagrams at multiple frequencies
+- added plotting multiple sets of radiation data (= results from RP cards)
+  for a frequency.
+- added reading of multiple output files.
+- removed unbuffered option.
+- minor rewrites of some parts of the code.
+- revised the documentation, creating new files USAGE and HISTORY, thus
+  shortening README.
+
+Version 1.11, 2000-07-15
+- added "support" for GC cards (i.e., they are ignored since xnecview
+  does not display the wire thickness).
+- added calculation and plotting of gain and f/b in direction toward observer.
+- added a line of text showing frequency and gain in bottom of 3D plot.
+- added centered titles to the 2D plots.
+- mostly rewrote the man page on the basis of the USAGE file.
+- some optimizations by caching often calculated data; however, the Xserver's
+  speed seems to be the limiting factor on my system, so this doesn't bring
+  much.
+- bugfix: clicking on the gainscale button if no radiation pattern data was
+  available produced a segmentation fault.
+- bugfix: reading multiple sets of radiation data sometimes gave an empty
+  radiation pattern plot, depending on the order of the data.
+- bugfix: GW cards with NRPT=0 or ITS>0 were not handled correctly.
+Note: this version is a snapshot taken just before the GTK version started
+to diverge too far to keep developing both versions in parallel.
+
+Version 1.20, 2000-08-07
+- user interface code converted to use the GTK library instead of Xaw/Xmu/Xt.
+- added display of phase and magnitude of currents in wires (based on original
+  suggestions by Marco Menchise IZ8AEB and Francesco Messineo IW8QPI; tnx!).
+- changed mouse bindings for dragging and zooming
+- added support for TL and NT cards
+- dynamic memory allocation for radiation pattern data, resulting in much
+  smaller memory usage.
+- dropped the USAGE file, the man page is now the only file with detailed
+  usage information.
+
+Version 1.30, 2000-11-05
+- added linear-in-voltage scale; the original linear scale was (and
+  still is) linear in power.
+- animated display of currents, charges, electric and magnetic (near) field
+  vector, Poynting vector.
+- command-line options; xnecview options in comment line of NEC input
+- fix some compiler warnings
+- limit display of Z to 20*Z0
+- add display of phi(Z)/abs(Z)
+- don't draw a square at each data point if there are many (window 2)
+  (latter four changes essentially contributed by Joerg Wunsch DL8DTL; tnx!)
+- number of grid lines in freqplots adapts to size of graph
+- output files without currents information no longer cause a segfault
+- some other minor fixes
+
+Version 1.31, 2001-06-24
+- changed axes of frequency plots: number of subdivisions can now be
+  variable, resulting in a more readable axis (stepsizes are now always
+  multiples of 1, 2, 2.5, or 5; no longer 4 or 7.5).
+- if f/b is unknown, '-' is printed (instead of -1e-308) in table
+- hide 'nan' on axes (window 2) if no relevant data available
+- impedance (Z0) can now have up to 4 digits (instead of 2)
+- new option: -aupdate to set the update interval of animation
+- bugfix: extremely large values of Zi could hang xnecview
+- some small fixes in choosing which frequency is used for radiation
+  pattern display after reloading
+
+Version 1.32, 2002-08-25
+- the radiation pattern can now be displayed as a "wire grid" (like in
+  earlier versions) or as an "opaque" surface (i.e., with hidden lines
+  removed). The latter view is usually much easier to interpret, especially
+  when there are many sidelobes.
+- the gain display can now be limited to one polarization component, or
+  the 3D pattern can be coloured according to the dominant polarization.
+- changed some of the default colors, which did not contrast enough with
+  the white background. But you can of course change them again, by
+  editing config.h .
+- keypress 'z' now suspends/resumes the animation
+- typo & corrections in manpage
+- fixed bug that could cause segfault if NEC output file initially
+  contained data at one frequency, and at more frequencies upon reread.
+- reduced memory usage by changing arrays from double to float
+- bugfix: missing lines in eps-export of freqplot
+- bugfix: GS card vs. currents data
+- if only a NEC output file is given and no input file, the structure view
+  now defaults to 'none' rather than 'currents'.
+
+Version 1.33, 2002-12-27
+- now all memory allocation is dynamic, so no limitations on model size
+  anymore.
+- output is now also correctly interpreted if numerical Green's function 
+  is used (GF card).
+- added commandline option --pol .
+- changed rotation "speed": this is now independent of zoom factor
+- bugfix: if surfaces were present, GS cards were not interpreted properly
+- bugfix: segfault sometimes when selecting 'opaque' while no radiation data
+  was available
+- elaborate bugfix of opaque drawing; in practice, this mostly affects drawing
+  of points on the Z axis, when a polarization different from 'total' is
+  selected.
+- fixes to the Imakefile (tnx Alan Bain)
+
+Version 1.34, 2003-09-10
+- yet another opaque drawing bugfix.
+- bugfix: when zooming in very far, coordinates became too large for X11,
+  causing incorrect lines to appear.
+- converted the last bits of Xlib code to GTK.
+- changed line ending style from "butt" to "round".
+- bugfix in parsing xnecview options embedded in NEC input file
+- minor fixes in handling of window (re)sizing
+
+Version 1.35, 2006-04-05
+- now supports for rectangular, triangular and quadrilateral surface
+  patches in NEC input (tnx to Predrag Miocinovic for contributing this).
+- now understands the "other" output format that some versions of NEC
+  apparently produce (tnx to several people for submitting this).
+- now compiles against GTK+-2 and later, rather than 1.2 (again, tnx to
+  several people).
+- graphs in window 2 now also have units printed at/near the axes.
+- main() return values now correctly represent error conditions (tnx Alan Bain)
+- yet another opaque drawing bugfix.
+- bugfix: export to PNG of window 2 didn't work
+- bugfix: ne->rpgpovalid was not always initialized
+- bugfix: animation didn't work on some systems because do_animation() didn't 
+  have an explicit return value
+
+Version 1.36, 2011-07-26
+- a few minor bugfixes:
+  - correct depth parameter in some gtk calls (tnx Alan Bain)
+  - set numeric locale to C for correct parsing of data files
+  - correct interpretation of last parameter in GM cards (float vs. int) (tnx
+    Graham Seale)
+- support for NEC output files that do not contain 'input parameters' data
+  (practically speaking: structures that are excited by incoming fields)
+- fixed a few compiler warnings
