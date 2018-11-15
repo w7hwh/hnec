@@ -47,6 +47,21 @@ namespace hnec
             //Console.WriteLine(-5.2f % 2.0f); // output: -1.2
             //Console.WriteLine(5.0 % 2.2);    // output: 0.6
             //Console.WriteLine(.41 % .2);     // output: 0.00999999999999995
+
+            //string[] values = { "1,643.57", "$1,643.57", "-1.643e6",
+            //              "-168934617882109132", "123AE6",
+            //              null, String.Empty, "ABCDEF",
+            //              "11",  "10",  "11",  "2",  ".005484",  "-.019898",  "0",  "1.0E10",  "0.",  "1.E10"
+            //};
+            //double number;
+
+            //foreach (var value in values)
+            //{
+            //    if (Double.TryParse(value, out number))
+            //        Console.WriteLine("'{0}' --> {1}", value, number);
+            //    else
+            //        Console.WriteLine("Unable to parse '{0}'.", value);
+            //}
 #endif
 
             Application.EnableVisualStyles();

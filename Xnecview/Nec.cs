@@ -33,6 +33,11 @@ namespace Necview
             public double y;
             public double z;
 
+            public Point()
+            {
+                x = y = z = 0;
+            }
+
             public override string ToString() => string.Format("Point({0},{1},{2})", x, y, z);
         };
         #endregion
@@ -54,6 +59,9 @@ namespace Necview
             {
                 this.p0 = new Nec.Point();
                 this.p1 = new Nec.Point();
+                rad = 0.0;
+                itg = ns = abs = 0;
+                dispnr = false;
             }
 
             public override string ToString() => string.Format("Wire = {0}, {1}, {2}, {3}, {4}, {5}, {6}", itg, ns, p0.ToString(), p1.ToString(), rad, abs, dispnr);
@@ -87,6 +95,7 @@ namespace Necview
 
             public Surface()
             {
+                this.type = SU.SU_none;
                 this.p0 = new Nec.Point();
                 this.p1 = new Nec.Point();
                 this.p2 = new Nec.Point();
@@ -95,12 +104,13 @@ namespace Necview
                 this.pa = new Nec.Point();
             }
 
-            public override string ToString() => string.Format("Surface = {0}, {1}, {2}, {3}, {4}, {5}, {6}", 
+            public override string ToString() => string.Format("Surface = {0}, {1}, {2}, {3}, {4}, {5}, {6}",
                         type, p0.ToString(), p1.ToString(), p2.ToString(), p3.ToString(), pc.ToString(), pa.ToString());
         };
 
         public enum SU
         {
+            SU_none = 0,    /* not initialized yet */
             SU_rect = 1,    /* rectangular shape (p2,p3 ignored) */
             SU_arb = 2,     /* "arbitrary" shape, shown as a set of 8 crossing lines (p2,p3 ignored) */
             SU_tri = 3,     /* triangle (p3 ignored) */
@@ -125,11 +135,22 @@ namespace Necview
         /// </summary>
         public class Exci
         {
-            // TODO fix exci
-            //Wire* wire;        /* pointer to Wire data */
-            public int seg;           /* segment number within wire */
+            public int wireNo;   // pointer to Wire data
+            public int seg;      // segment number within wire
 
-            public override string ToString() => string.Format("Exci = {0}", seg);
+            public Exci()
+            {
+                wireNo = 0;
+                seg = 0;
+            }
+
+            public Exci(int newWire, int newSeg)
+            {
+                wireNo = newWire;
+                seg = newSeg;
+            }
+
+            public override string ToString() => string.Format("Exci = {0}, {1}", seg, wireNo);
         };
 
         public static List<Exci> excis = new List<Exci>();
@@ -145,31 +166,99 @@ namespace Necview
         }
         #endregion
         #region Load
-        /* class to describe a load */
+        /// <summary>
+        /// class to describe a load
+        /// </summary>
+        /// <remarks>
+        ///  note: if an LD card specifies a loading which extends over several wires,
+        ///  it is represented here by one Load struct per wire
+        /// </remarks>
         public class Load
         {
-            //Wire* wire;        /* pointer to Wire data */
-            public int firstseg;      /* number of first loaded segment within wire */
-            public int lastseg;       /* number of last loaded segment within wire */
-        };               /* note: if an LD card specifies a loading which extends over several wires, it is represented here by one Load struct per wire */
+            public int wireNo;   // pointer to Wire data
+            public int firstseg; // number of first loaded segment within wire
+            public int lastseg;  // number of last loaded segment within wire
 
-        public static int numloads;
-        public static int maxloads;
+            /// <summary>
+            /// 
+            /// </summary>
+            public Load()
+            {
+                wireNo = 0;
+                firstseg = lastseg = 0;
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <returns></returns>
+            public override string ToString() => string.Format("Load = {0}, {1}, {2}", wireNo, firstseg, lastseg);
+        };
+
+        /// <summary>
+        /// 
+        /// </summary>
         public static List<Load> loads = new List<Load>();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void DumpLoads()
+        {
+            Console.WriteLine("------- DumpLoads() dumping {0} loads -------", loads.Count);
+            foreach (Load l in loads)
+            {
+                Console.WriteLine(l.ToString());
+            }
+            Console.WriteLine("----------------------------------------");
+        }
         #endregion
         #region Netw
-        /* class to describe a "network" in the antenna structure; 
-         * a transmission line is a special case of this */
+         /// <summary>
+         /// class to describe a "network" in the antenna structure; 
+         /// a transmission line is a special case of this
+         /// </summary>
         public class Netw
         {
-            //Wire* wire1;       /* pointer to Wire data of one end of the network / transmission line */
-            public int seg1;          /* segment number within wire */
-            //Wire* wire2;       /* same for the other end of the network / transmission line */
-            public int seg2;
+            public int wireNo1;       // pointer to Wire data of one end of the network / transmission line
+            public int seg1;          // segment number within wire
+            public int wireNo2;       // same for the other end of the network / transmission line
+            public int seg2;          // segment number within wire
             public NETW_TYPE type;
 
-            public override string ToString() => string.Format("Netw = {0}, {1}, {2}", seg1, seg2, type);
-            };
+            /// <summary>
+            /// 
+            /// </summary>
+            public Netw()
+            {
+                wireNo1 = wireNo2 = 0;
+                seg1 = seg1 = 0;
+                type = NETW_TYPE.generic;
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="w1"></param>
+            /// <param name="s1"></param>
+            /// <param name="w2"></param>
+            /// <param name="s2"></param>
+            /// <param name="t"></param>
+            public Netw(int w1, int s1, int w2, int s2, NETW_TYPE t)
+            {
+                wireNo1 = w1;
+                seg1 = s1;
+                wireNo2 = w2;
+                seg2 = s2;
+                type = t;
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <returns></returns>
+            public override string ToString() => string.Format("Netw = {0}, {1}, {2}, {3}, {4}", wireNo1, seg1, wireNo2, seg2, type);
+        };
 
         public enum NETW_TYPE
         {
@@ -179,6 +268,9 @@ namespace Necview
         }
         public static List<Netw> netws = new List<Netw>();
 
+        /// <summary>
+        /// 
+        /// </summary>
         public static void DumpNetws()
         {
             Console.WriteLine("------- DumpNetws() dumping {0} netws -------", netws.Count);
@@ -341,8 +433,11 @@ namespace Necview
             float qre;      /* real value of the charge */
             float qim;      /* imaginary value of the charge */
 
+            /// <summary>
+            /// 
+            /// </summary>
             public Segcur()
-                {
+            {
                 this.p0 = new Nec.Point();
                 this.p1 = new Nec.Point();
                 this.c = new Nec.Point();
@@ -400,63 +495,7 @@ namespace Necview
         public static List<NF> Nearfield = new List<NF>();
         #endregion
 
-        #region Nec Output
-        /// <summary>
-        /// indices in the element 'd' of the NECoutput structure defined below
-        /// </summary>
-        public enum NECO
-        {
-            neco_zr, neco_zi,       /* index of real and imaginary part of impedance */
-            neco_zphi, neco_zabs,   /* phi and absolute value of impedance */
-            neco_swr,               /* index of SWR */
-            neco_maxgain, neco_fb,  /* index of maximum gain and corresponding front/back ratio */
-            neco_phi, neco_theta,   /* index direction of maximum gain */
-            neco_vgain, neco_vfb,   /* index of gain in viewing direction and corresponding f/b ratio */
-            neco_vgain2, neco_vfb2, /* same, but taking polarization into account; fb/fb2 as fb1/fb2 below */
-            neco_maxgain_hor, neco_fb_hor1, neco_fb_hor2, neco_phi_hor, neco_theta_hor,
-            neco_maxgain_vert, neco_fb_vert1, neco_fb_vert2, neco_phi_vert, neco_theta_vert,
-            neco_maxgain_lhcp, neco_fb_lhcp1, neco_fb_lhcp2, neco_phi_lhcp, neco_theta_lhcp,
-            neco_maxgain_rhcp, neco_fb_rhcp1, neco_fb_rhcp2, neco_phi_rhcp, neco_theta_rhcp,
-            neco_numdat             /* last element of the enum: number of elements in the array */
-        };
-
-        /* since (maximum) gain and corresponding quantities are not available in all NECoutput records,
-           the following macro is needed to tell whether a quantity is available always, or only if
-           radiation pattern data is available in the record: */
-        //#define ONLY_IF_RP(i) ((i)>=neco_maxgain)
-        /* a constant for more systematic access to the polarization-specific fields: */
-        //#define Neco_gsize 5     /* group size */
-        //#define Neco_polgain (neco_maxgain_hor-Neco_gsize)
-        //#define Neco_polfb1 (neco_fb_hor1-Neco_gsize)
-        //#define Neco_polfb2 (neco_fb_hor2-Neco_gsize)
-        //#define Neco_polphi (neco_phi_hor-Neco_gsize)
-        //#define Neco_poltheta (neco_theta_hor-Neco_gsize)
-        /* now, we can write say  neco_phi_lhcp  as  Neco_gsize*POLlhcp+Neco_polphi  */
-        /* note: fb...1 is f/b ratio for this polarization; fb...2 is same but for back total power is used */
-
-        /// <summary>
-        /// class to contain all output data that NEC produces for one frequency
-        /// </summary>
-        public class NECoutput
-        {
-            double f;          /* frequency in MHz */
-            //Radpattern* rp;    /* pointer to radiation pattern data, if available; NULL otherwise */
-            //public fixed double d[(int)NECO.neco_numdat];
-            int rpgpovalid;    /* flag: !=0 if the gpo field of *rp already contains valid data for the present settings */
-            //Currents* cu;      /* pointer to currents data, if available; NULL otherwise */
-            //Nearfield* nf;     /* pointer to nearfield data, if available; NULL otherwise */
-            double maxe, maxh;  /* largest values of E and H in nearfield data */
-        };
-
-        //extern NECoutput * neco;
-        //extern int numneco;
-        //extern int maxfreqs;
-
-        //extern double globalmaxdb; /* maximum gain, global over all frequencies and all output data files */
-
-        //extern int rp_index;       /* index of the entry in neco[] whose radiation pattern is being shown in the 3D plot */
-        #endregion
-
+ 
         //extern double r0;          /* reference impedance for SWR calculations */
 
         //extern int window1open;
@@ -466,54 +505,6 @@ namespace Necview
 
         //extern int fontheight;
 
-        //#ifndef GdkColor
-        //   #include <gdk/gdk.h>
-        //#endif
-        //#define c_bg    col[0]
-        //#define c_axis  col[1]
-        //#define c_wire  col[2]
-        //#define c_surf  col[3]
-        //#define c_back  col[4]
-        //#define c_gain  col[5]
-        //#define c_scale col[6]
-        //#define c_exci  col[7]
-        //#define c_load  col[8]
-        //#define c_netw  col[9]
-        //#define c_inactive col[10]
-        //#define c_efield   col[11]
-        //#define c_hfield   col[12]
-        //#define c_poynting col[13]
-        //#define c_qpos     col[14]
-        //#define c_qneg     col[15]
-        //#define c_gain_lin   col[16]
-        //#define c_gain_lhcp  col[17]
-        //#define c_gain_rhcp  col[18]
-        //#define c_currents (col+19)
-        //#define NC NC_phase+19
-        //extern GdkColor col[NC];
-
-        //typedef struct {
-        //   void (* SetLineAttributes) (unsigned int,int,int,int);
-        //   void (* DrawLine) (double, double, double, double);
-        //   void (* SetForeground) (GdkColor*);
-        //   void (* ClearWindow) ();
-        //   void (* DrawString) (double, double, char*, double, double);
-        //   void (* Complete) ();
-        //   void (* SetClipRectangle) (double, double, double, double);
-        //   void (* ClearRectangle) (double, double, double, double);
-        //} Outdev;
-        //extern Outdev *out;   /* pointer to Outdev struct, determines destination of drawing commands issued through the below macros: */
-
-        //#define SetLineAttributes(a,b,c,d) out->SetLineAttributes((a),(b),(c),(d))
-        //#define DrawLine(a,b,c,d) out->DrawLine((a),(b),(c),(d))
-        //#define SetForeground(a) out->SetForeground(a)
-        //#define ClearWindow() out->ClearWindow()
-        //#define DrawStringLL(a,b,c) DrawString(a,b,c,0,0)     /* draw text specifying lower left corner */
-        //#define DrawStringUL(a,b,c) DrawString(a,b,c,0,1)     /* draw text specifying upper left corner */
-        //#define DrawString(a,b,c,d,e) out->DrawString(a,b,c,d,e) /* draw text specifying a corner defined by d and e:
-        //                                                            d = 0...1 for left...right; e = 0...1 for lower...upper*/
-        //#define SetClipRectangle(a,b,c,d) out->SetClipRectangle(a,b,c,d)  /* set clip rectangle to (a,b)..(c,d) */
-        //#define ClearRectangle(a,b,c,d) out->ClearRectangle(a,b,c,d)  /* clear part of window */
         //void process_nec_output(NECoutput* ne);     /* transform the gain data array into an array of points in 3D space */
         //void calc_vgain(void);                      /* update the vgain records in accordance with the viewing direction */
         //void mark_gpo_invalid(void);                /* mark gpo fields as invalid; must be called after every change of gain scale */

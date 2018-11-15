@@ -20,10 +20,11 @@ using System.Windows.Forms;
 
 namespace Necview
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class Program
     {
-        public static readonly string VERSION = "1.36";
-
         private static int Maxopts = 100;
 
         //        char* myargv[Maxopts];
@@ -187,6 +188,10 @@ namespace Necview
 #endif
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="s"></param>
         public static void Process_optionstring(string s)
         {
 #if (HAVE_GETOPT)
@@ -236,12 +241,16 @@ namespace Necview
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="args"></param>
         public static void Main(params string[] args)
         {
             int i;
             int argc = args.Length;
 
-            Console.WriteLine("XNECVIEW {0}", VERSION);
+            Console.WriteLine("XNECVIEW {0}", Config.VERSION);
 
             if (argc == 1)
             {

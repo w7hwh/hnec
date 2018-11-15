@@ -37,6 +37,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -49,7 +50,20 @@
     <Compile Include="Config.cs" />
     <Compile Include="Draw.cs" />
     <Compile Include="DrawOpaque.cs" />
-    <Compile Include="FreqPlot.cs" />
+    <Compile Include="NecOutput.cs" />
+    <Compile Include="PlotStructGain.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PlotStructGain.Designer.cs">
+      <DependentUpon>PlotStructGain.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PlotVsFrequency.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PlotVsFrequency.Designer.cs">
+      <DependentUpon>PlotVsFrequency.cs</DependentUpon>
+    </Compile>
+    <Compile Include="IOutdevInterface.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Postscript.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -69,6 +83,14 @@
     <Content Include="readme.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="PlotStructGain.resx">
+      <DependentUpon>PlotStructGain.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PlotVsFrequency.resx">
+      <DependentUpon>PlotVsFrequency.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

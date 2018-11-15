@@ -25,24 +25,24 @@ namespace Necview
         double globalmaxdb = -1e30;
 
 
-        //        void calcswr(ref NECoutput ne)
-        //        {
-        //            double zr, zi, gamma;
+        void calcswr(ref NecOutput ne)
+        {
+            //            double zr, zi, gamma;
 
-        //            zr = ne.d[neco_zr];
-        //            zi = ne.[neco_zi];
-        //            gamma = sqrt(((zr - r0) * (zr - r0) + zi * zi) / ((zr + r0) * (zr + r0) + zi * zi));
-        //            ne.d[neco_swr] = (1 + gamma) / (1 - gamma);
-        //        }
+            //            zr = ne.d[neco_zr];
+            //            zi = ne.[neco_zi];
+            //            gamma = sqrt(((zr - r0) * (zr - r0) + zi * zi) / ((zr + r0) * (zr + r0) + zi * zi));
+            //            ne.d[neco_swr] = (1 + gamma) / (1 - gamma);
+        }
 
 
-        void calcphiabs(ref Nec.NECoutput ne)
+        void calcphiabs(ref NecOutput ne)
         {
             double zr, zi;
-            //zr = ne.d[Nec.NECO.neco_zr];
-            //zi = ne.d[Nec.NECO.neco_zi];
-            //ne.d[Nec.NECO.neco_zabs] = Math.Sqrt(zr * zr + zi * zi);
-            //ne.d[Nec.NECO.neco_zphi] = 180 * (1/Math.PI) * Math.Atan2(zi, zr);
+            //zr = ne.d[NecOutput.NECO.neco_zr];
+            //zi = ne.d[NecOutput.NECO.neco_zi];
+            //ne.d[NecOutput.NECO.neco_zabs] = Math.Sqrt(zr * zr + zi * zi);
+            //ne.d[NecOutput.NECO.neco_zphi] = 180 * (1/Math.PI) * Math.Atan2(zi, zr);
         }
 
 
@@ -91,7 +91,7 @@ namespace Necview
         //            return f;
         //        }
 
-        //        void update_maxgains(Gain* g, NECoutput* ne, double phi, double theta)
+        //        void update_maxgains(ref Gain g, ref NecOutput ne, double phi, double theta)
         //        {
         //            double f;
         //            double a, b;
@@ -149,7 +149,7 @@ namespace Necview
         /// </summary>
         /// <param name="ne"></param>
         /// <param name="r"></param>
-        void find_fb(ref Nec.NECoutput ne, ref Nec.Radpattern r)
+        void find_fb(ref NecOutput ne, ref Nec.Radpattern r)
         {
             int i, j, k;
             double theta, phi;
@@ -206,7 +206,7 @@ namespace Necview
         /// </summary>
         /// <param name="file"></param>
         /// <param name="ne"></param>
-        private void Read_nec_output_rad(System.IO.StreamReader file, ref Nec.NECoutput ne)
+        private void Read_nec_output_rad(System.IO.StreamReader file, ref NecOutput ne)
         {
             char[] s = new char[200];
             double phi, theta;
@@ -705,7 +705,7 @@ namespace Necview
         /// <param name="f"></param>
         /// <param name="ne"></param>
         /// <param name="magnetic"></param>
-        void Read_nec_output_nearfield(System.IO.StreamReader f, ref Nec.NECoutput ne, int magnetic)
+        void Read_nec_output_nearfield(System.IO.StreamReader f, ref NecOutput ne, int magnetic)
         {
             //            char s[200];
             //            char* p;
@@ -1010,7 +1010,7 @@ namespace Necview
         /// transform gain distribution into an array of points in 3D space
         /// </summary>
         /// <param name="ne"></param>
-        void Process_nec_output(ref Nec.NECoutput ne)
+        void Process_nec_output(ref NecOutput ne)
         {
             //            int i, j;
             //            double r = 0;
@@ -1058,7 +1058,7 @@ namespace Necview
         /// <param name=""></param>
         void Calc_vgain()
         {
-            //            NECoutput* ne;
+            //            NecOutput* ne;
             //            int i, j, k;
             //            int i0 = 0, j0 = 0;
             //            Radpattern* rp,*rp0;

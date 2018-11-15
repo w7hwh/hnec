@@ -9,13 +9,13 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Drawing;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Necview
 {
-    class Postscript
+    class Postscript : IOutdevInterface
     {
         public enum PSDRAW
         {
@@ -26,9 +26,13 @@ namespace Necview
 
         int needstroke;
         int needmoveto;
-        //        GdkColor* xcprev = NULL;
+        Color xcprev;
 
-        void Ps_DrawLine(double x1, double y1, double x2, double y2)
+        public Postscript()
+        {
+        }
+
+        public void DrawLine(double x1, double y1, double x2, double y2)
         {
             double lastx = -1, lasty = -1;
             //            if (x1 != lastx || y1 != lasty || needmoveto)
@@ -42,7 +46,7 @@ namespace Necview
             //            needstroke = 1;
         }
 
-        void Ps_SetLineAttributes(uint line_width, int line_style, int cap_style, int join_style)
+        public void SetLineAttributes(uint line_width, int line_style, int cap_style, int join_style)
         {
             //            if (needstroke) { fprintf(psfile, "stroke\n"); needstroke = 0; }
             //            if (line_width == 0) line_width++;   /* Zero width lines for X11 speed of drawing but in
@@ -65,8 +69,7 @@ namespace Necview
             //            needmoveto = 1;
         }
 
-        // TODO void ps_SetForeground(GdkColor* xc)
-        void Ps_SetForeground()
+        public void SetForeground(Color color)
         {
             //if (xc == xcprev) return;
             //xcprev = xc;
@@ -75,21 +78,21 @@ namespace Necview
             //            needmoveto = 1;
         }
 
-        void Ps_ClearWindow()
+        public void ClearWindow()
         {
         }
 
-        void Ps_DrawString(double a, double b, string s, double d, double e)
+        public void DrawString(double a, double b, string s, double d, double e)
         {
             //            fprintf(psfile, "gsave (%s) dup stringwidth pop %g mul %g add\n", s, -d, a);
             //            fprintf(psfile, "%g descent sub ascent descent add %g mul add m 1 -1 scale show grestore\n", b, e);
         }
 
-        void Ps_Complete()
+        public void Complete()
         {
         }
 
-        void Ps_SetClipRectangle(double x1, double y1, double x2, double y2)
+        public void SetClipRectangle(double x1, double y1, double x2, double y2)
         {
             //            if (needstroke) { fprintf(psfile, "stroke\n"); needstroke = 0; }
             //            xcprev = NULL;
@@ -98,17 +101,9 @@ namespace Necview
             //                                    x1, y1, x1, y2, x2, y2, x2, y1);
         }
 
-
-        //        Outdev out_ps = {
-        //   ps_SetLineAttributes,
-        //   ps_DrawLine,
-        //   ps_SetForeground,
-        //   ps_ClearWindow,
-        //   ps_DrawString,
-        //   ps_Complete,
-        //   ps_SetClipRectangle,
-        //   NULL,
-        //};
+        public void ClearRectangle(double a, double b, double c, double d)
+        {
+        }
 
         private static int PSsize = 400;
         private static int PSllx = 50;
@@ -166,7 +161,7 @@ namespace Necview
                     break;
 
                 case PSDRAW.TWO:
-                    FreqPlot.Draw_all2(0);
+                    //FreqPlot.Draw_all2(0);
                     break;
             }
 

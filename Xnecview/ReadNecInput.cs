@@ -50,7 +50,7 @@ namespace Necview
         /// <summary>
         /// 
         /// </summary>
-        
+
         /// <summary>
         /// type of previous card
         /// </summary>
@@ -258,24 +258,45 @@ namespace Necview
         }
 
         /// <summary>
+        /// split a string on spaces
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns>string array of entries</returns>
+        private string[] SplitLine(string s)
+        {
+            char[] charSeparators = new char[] { ' ' };
+
+            return s.Split(charSeparators, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="tag"></param>
         /// <param name="seg"></param>
         /// <param name="card"></param>
-        /// <param name="wirep"></param>
-        /// <param name="segp"></param>
+        /// <param name="newWire"></param>
+        /// <param name="newSeg"></param>
         /// <returns></returns>
-        ERR Find_segment(int tag, int seg, string card, ref Nec.Wire wirep, ref int segp)
+        ERR Find_segment(int tag, int seg, string card, out int newWire, out int newSeg)
         {
-            //  usage: err = find_segment(tag, seg, "EX", &excis[numexcis].wire, &excis[numexcis].seg);
+            // was ref Nec.Wire wirep, ref int segp
+            // USAGE:
+            //     err = find_segment(tag,  seg,  "EX", &excis[numexcis].wire, &excis[numexcis].seg);
+            //     err = find_segment(tag1, seg1, "TL", &netws[Nec.netws.Count()].wire1, &netws[Nec.netws.Count()].seg1);
+            //     err = find_segment(tag2, seg2, "TL", &netws[Nec.netws.Count()].wire2, &netws[Nec.netws.Count()].seg2);
+            //     err = find_segment(tag1, seg1, "NT", &netws[Nec.netws.Count()].wire1, &netws[Nec.netws.Count()].seg1);
+            //     err = find_segment(tag2, seg2, "NT", &netws[Nec.netws.Count()].wire2, &netws[Nec.netws.Count()].seg2);
 
             int i;
+
+            newWire = newSeg = 0;
 
             if (tag > 0)
             {  /* location specified as tag,seg pair */
                 for (i = 0; i < Nec.wires.Count; i++)
-                    if (Nec.wires[i].itg == tag) break;
+                    if (Nec.wires[i].itg == tag)
+                        break;
                 if (i == Nec.wires.Count)
                 {
                     Console.WriteLine("Unknown tag number on {0} card: {1}", card, tag);
@@ -289,7 +310,7 @@ namespace Necview
                         return ERR.Err_misc;
                     }
                 }
-                else
+                else  // (Nec.wires[i].ns > 0)
                 {
                     while (Nec.wires[i].ns != -seg && Nec.wires[i].itg == tag) i++;
                     if (Nec.wires[i].itg != tag)
@@ -298,37 +319,23 @@ namespace Necview
                         return ERR.Err_misc;
                     }
                 }
-                //*segp = seg;
+                newSeg = seg;
             }
-            else
-            {                       /* location specified as absolute segment number */
+            else  // tag > 0
+            {
+                // location specified as absolute segment number
                 for (i = 0; i < Nec.wires.Count; i++)
-                    if (seg >= Nec.wires[i].abs && seg < Nec.wires[i].abs + Nec.wires[i].ns) break;
+                    if (seg >= Nec.wires[i].abs && seg < Nec.wires[i].abs + Nec.wires[i].ns)
+                        break;
+
                 if (i == Nec.wires.Count)
                 {
                     Console.WriteLine("Incorrect absolute segment number on {0} card: {1}", card, seg);
                     return ERR.Err_misc;
                 }
-                //*segp = seg - wires[i].abs + 1;
+                newSeg = seg - Nec.wires[i].abs + 1;
             }
-            //*wirep = wires + i;
-            return ERR.Err_none;
-        }
-
-        /// <summary>
-        /// CM -> comment card; check whether it contains xnecview options
-        /// </summary>
-        /// <param name="s"></param>
-        /// <returns>ERR enum</returns>
-        private ERR Read_nec_CM(string s)
-        {
-            Debug.WriteLine(String.Format("Read_nec_CM({0})", s));
-
-            Regex r_cm = new Regex("^CM\\s*xnecview:\\s*(?<options>.*)", RegexOptions.CultureInvariant | RegexOptions.Compiled);
-
-            Match m = r_cm.Match(s);
-            if (m.Success)
-                Program.Process_optionstring(m.Result("${options}"));
+            newWire = i;
 
             return ERR.Err_none;
         }
@@ -363,12 +370,13 @@ namespace Necview
                 return ERR.Err_misc;
             }
 
-            //  err = find_segment(tag, seg, "EX", &excis[numexcis].wire, &excis[numexcis].seg);
+            err = Find_segment(tag, seg, "EX", out int newWire, out int newSeg);
 
             if (err != ERR.Err_none)
                 return err;
 
-            //            numexcis++;
+            Nec.excis.Add(new Nec.Exci(newWire, newSeg));
+
             return ERR.Err_none;
         }
 
@@ -381,19 +389,39 @@ namespace Necview
         {
             int tag1, seg1, tag2, seg2;
             ERR err = ERR.Err_none;
-            double imp;
+            double imp = 0;
+            Nec.NETW_TYPE type = Nec.NETW_TYPE.generic;
 
             Debug.WriteLine(String.Format("Read_nec_TL({0})", s));
 
             Removecommas(ref s);
-            //            if (sscanf(s, "TL%d%d%d%d%lg", &tag1, &seg1, &tag2, &seg2, &imp) != 5) return ERR.Err_scan;
 
-            //           err = find_segment(tag1, seg1, "TL", &netws[Nec.netws.Count()].wire1, &netws[Nec.netws.Count()].seg1);
-            if (err != ERR.Err_none) return err;
-            //            err = find_segment(tag2, seg2, "TL", &netws[Nec.netws.Count()].wire2, &netws[Nec.netws.Count()].seg2);
-            if (err != ERR.Err_none) return err;
-            //            if (imp < 0) netws[Nec.netws.Count()].type = -1; else netws[Nec.netws.Count()].type = 1;
-            //            Nec.netws.Count()++;
+            Regex r_tl = new Regex("^TL\\s*(?<tag1>\\d+)\\s*(?<seg1>\\d+)\\s*(?<tag2>\\d+)\\s*(?<seg2>\\d+)\\s*(?<imp>\\d+)", RegexOptions.CultureInvariant | RegexOptions.Compiled);
+
+            Match m = r_tl.Match(s);
+            if (!m.Success)
+                return ERR.Err_scan;
+
+            tag1 = int.Parse(m.Result("${tag1}"));
+            seg1 = int.Parse(m.Result("${seg1}"));
+            tag2 = int.Parse(m.Result("${tag2}"));
+            seg2 = int.Parse(m.Result("${seg2}"));
+            imp = double.Parse(m.Result("${imp}"));
+
+            err = Find_segment(tag1, seg1, "TL", out int w1, out int s1);
+            if (err != ERR.Err_none)
+                return err;
+
+            err = Find_segment(tag2, seg2, "TL", out int w2, out int s2);
+            if (err != ERR.Err_none)
+                return err;
+
+            if (imp < 0)
+                type = Nec.NETW_TYPE.phaseReversal;
+            else
+                type = Nec.NETW_TYPE.noPhaseReversal;
+
+            Nec.netws.Add(new Nec.Netw(w1, s1, w2, s2, type));
             return ERR.Err_none;
         }
 
@@ -405,20 +433,45 @@ namespace Necview
         ERR Read_nec_NT(string s)
         {
             int tag1, seg1, tag2, seg2;
+            //double d1, d2, d3, d4;
+
             ERR err = ERR.Err_none;
 
             Debug.WriteLine(String.Format("Read_nec_NT({0})", s));
             Removecommas(ref s);
-            Debug.WriteLine(String.Format("no commas Read_nec_NT({0})", s));
 
-            //            if (sscanf(s, "NT%d%d%d%d", &tag1, &seg1, &tag2, &seg2) != 4) return Err_scan;
+            string[] words = SplitLine(s);
+            //foreach (var w in words)
+            //    Console.WriteLine(w);
 
-            //           err = find_segment(tag1, seg1, "NT", &netws[Nec.netws.Count()].wire1, &netws[Nec.netws.Count()].seg1);
-            //            if (err) return err;
-            //            err = find_segment(tag2, seg2, "NT", &netws[Nec.netws.Count()].wire2, &netws[Nec.netws.Count()].seg2);
-            if (err != ERR.Err_none) return err;
-            //            netws[Nec.netws.Count()].type = 0;
-            //            Nec.netws.Count()++;
+            // words[0] is the card type 'NT'
+            if (!int.TryParse(words[1], out tag1))
+                return ERR.Err_scan;
+            if (!int.TryParse(words[2], out seg1))
+                return ERR.Err_scan;
+            if (!int.TryParse(words[3], out tag2))
+                return ERR.Err_scan;
+            if (!int.TryParse(words[4], out seg2))
+                return ERR.Err_scan;
+            // Xnecview only uses the first 4 params
+            //if (!Double.TryParse(words[0], out d1))
+            //    return ERR.Err_scan;
+            //if (!Double.TryParse(words[0], out d2))
+            //    return ERR.Err_scan;
+            //if (!Double.TryParse(words[0], out d3))
+            //    return ERR.Err_scan;
+            //if (!Double.TryParse(words[0], out d4))
+            //    return ERR.Err_scan;
+
+            err = Find_segment(tag1, seg1, "NT", out int w1, out int s1);
+            if (err != ERR.Err_none)
+                return err;
+
+            err = Find_segment(tag2, seg2, "NT", out int w2, out int s2);
+            if (err != ERR.Err_none)
+                return err;
+
+            Nec.netws.Add(new Nec.Netw(w1, s1, w2, s2, Nec.NETW_TYPE.generic));
             return ERR.Err_none;
         }
 
@@ -1085,6 +1138,24 @@ namespace Necview
             //            su->p1.x = x2; su->p1.y = y2; su->p1.z = z2;
             //            updateextremes(&su->p0);
             //            updateextremes(&su->p1);
+            return ERR.Err_none;
+        }
+
+        /// <summary>
+        /// CM -> comment card; check whether it contains xnecview options
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns>ERR enum</returns>
+        private ERR Read_nec_CM(string s)
+        {
+            Debug.WriteLine(String.Format("Read_nec_CM({0})", s));
+
+            Regex r_cm = new Regex("^CM\\s*xnecview:\\s*(?<options>.*)", RegexOptions.CultureInvariant | RegexOptions.Compiled);
+
+            Match m = r_cm.Match(s);
+            if (m.Success)
+                Program.Process_optionstring(m.Result("${options}"));
+
             return ERR.Err_none;
         }
     }
